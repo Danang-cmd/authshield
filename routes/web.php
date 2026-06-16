@@ -1,20 +1,29 @@
 <?php
 
-// routes/web.php
-
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
-// Tampilan Form (sesuaikan nama file blade-mu)
-Route::view('/login', 'auth.login')->name('login.view')->middleware('guest');
-Route::view('/register', 'auth.register')->name('register.view')->middleware('guest');
+// 1. Halaman Utama otomatis diarahkan ke Login
+Route::redirect('/', '/login');
 
-// Eksekusi Logika Proyek AuthShield
-Route::post('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// 2. Rute untuk tamu (Guest) - Hanya bisa diakses jika BELUM login
+Route::middleware('guest')->group(function () {
+    // Tampilan Form
+    Route::view('/register', 'auth.register')->name('register.view');
+    Route::view('/login', 'auth.login')->name('login.view');
 
-// Proteksi Halaman Dashboard
-Route::middleware(['auth'])->group(function () {
-    Route::view('/dashboard', 'dashboard')->name('dashboard');
+    // Eksekusi Logika ke Controller
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
+});
+
+// 3. Rute Terproteksi (Auth) - Hanya bisa diakses jika SUDAH login
+// 3. Rute Terproteksi (Auth) - Hanya bisa diakses jika SUDAH login
+Route::middleware('auth')->group(function () {
+    
+    // UBAH BARIS INI: Panggil method dashboard dari AuthController
+    Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
+    
+    // Eksekusi Logout
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

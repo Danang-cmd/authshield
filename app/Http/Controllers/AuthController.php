@@ -1,13 +1,10 @@
 <?php
-// app/Http/Controllers/AuthController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -20,12 +17,11 @@ class AuthController extends Controller
         if ($length === 0) return 0;
 
         $poolSize = 0;
-        if (preg_match('/[a-z]/', $password)) $poolSize += 26; // Huruf kecil
-        if (preg_match('/[A-Z]/', $password)) $poolSize += 26; // Huruf kapital
-        if (preg_match('/[0-9]/', $password)) $poolSize += 10; // Angka
-        if (preg_match('/[^a-zA-Z0-9]/', $password)) $poolSize += 33; // Simbol/Karakter khusus
+        if (preg_match('/[a-z]/', $password)) $poolSize += 26; 
+        if (preg_match('/[A-Z]/', $password)) $poolSize += 26; 
+        if (preg_match('/[0-9]/', $password)) $poolSize += 10; 
+        if (preg_match('/[^a-zA-Z0-9]/', $password)) $poolSize += 33; 
 
-        // Rumus: E = L * log2(R)
         return $length * log($poolSize, 2);
     }
 
@@ -34,34 +30,36 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
-        // 1. Input Data & Validasi Awal Struktur Form
         $request->validate([
             'username' => 'required|string|unique:users,username|max:255',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        // 2. Pengecekan Kekuatan Password dengan Rumus Entropi
         $entropy = $this->calculatePasswordEntropy($request->password);
         
-        // Batas minimal entropi standar aman adalah sekitar 50-60 bit
         if ($entropy < 50) {
             return back()->withErrors([
                 'password' => "Password terlalu lemah (Entropi: " . round($entropy, 2) . " bit). Kombinasikan huruf besar, angka, dan simbol."
             ])->withInput();
         }
 
-        // 3. Generasi Salt Unik
-        $salt = Str::random(16);
-
-        // 4. Penggabungan (Password + Salt + Secret Key)
+        $salt = bin2hex(random_bytes(16)); 
         $secretKey = env('AUTH_SECRET_KEY');
         $combinedPassword = $request->password . $salt . $secretKey;
 
-        // 5. Proses Hashing menggunakan Bcrypt & Penyimpanan ke Database
+        $customCost = 12; 
+
+        $options = [
+            'cost' => $customCost
+        ];
+        
+        // Eksekusi hash manual
+        $manualHashedPassword = password_hash($combinedPassword, PASSWORD_BCRYPT, $options);
+
         User::create([
             'username' => $request->username,
             'salt'     => $salt,
-            'password' => Hash::make($combinedPassword), // Laravel menggunakan Bcrypt secara default
+            'password' => $manualHashedPassword, 
         ]);
 
         return redirect()->route('login.view')->with('success', 'Registrasi berhasil! Silakan login.');
@@ -72,36 +70,29 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // 1. Input Data
         $credentials = $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        // 2. Pencarian Pengguna berdasarkan Username
         $user = User::where('username', $credentials['username'])->first();
-
-        // Pesan error generik demi keamanan (mencegah user enumeration)
         $loginError = 'Username atau Password salah.';
 
         if (!$user) {
             return back()->withErrors(['username' => $loginError])->withInput();
         }
 
-        // 3. Rekonstruksi & Hashing Ulang (Password Login + Salt DB + Secret Key Server)
         $secretKey = env('AUTH_SECRET_KEY');
         $combinedPassword = $credentials['password'] . $user->salt . $secretKey;
 
-        // 4. Verifikasi / Pencocokan Hash Bcrypt
-        if (Hash::check($combinedPassword, $user->password)) {
-            // Jika Cocok: Buat session login
+        // Verifikasi otomatis membaca cost factor dari hash di database
+        if (password_verify($combinedPassword, $user->password)) {
             Auth::login($user);
             $request->session()->regenerate();
 
             return redirect()->intended('/dashboard');
         }
 
-        // Jika Berbeda
         return back()->withErrors(['username' => $loginError])->withInput();
     }
 
@@ -115,5 +106,30 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login.view');
+    }
+
+    /**
+     * Menampilkan Halaman Dashboard & Kalkulasi Benchmark
+     */
+    public function dashboard()
+    {
+        $user = Auth::user();
+        $userHash = $user->password;
+        
+        // Mengekstrak cost factor dari database untuk ditampilkan
+        $hashParts = explode('$', $userHash);
+        $costFactor = isset($hashParts[2]) ? (int) $hashParts[2] : 12;
+
+        // Menghitung total iterasi riil
+        $totalIterations = pow(2, $costFactor);
+
+        // Menjalankan Live Benchmark
+        $startTime = microtime(true);
+        password_hash('simulasi_benchmark_kecepatan', PASSWORD_BCRYPT, ['cost' => $costFactor]); 
+        $endTime = microtime(true);
+        
+        $executionTimeMs = round(($endTime - $startTime) * 1000, 2); 
+
+        return view('dashboard', compact('userHash', 'costFactor', 'totalIterations', 'executionTimeMs'));
     }
 }
