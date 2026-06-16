@@ -15,7 +15,7 @@ function generateManualBcrypt($password, $salt, $secretKey) {
     return $hashedPassword;
 }
 
-// --- Contoh Penggunaan ---
+// Contoh Penggunaan
 $passwordInput = "rahasia123";
 $salt = bin2hex(random_bytes(8)); // Contoh pembuatan salt acak
 $secretKey = "SECRET_DARI_ENV";   // Simulasi env('AUTH_SECRET_KEY')

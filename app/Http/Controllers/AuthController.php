@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    /**
-     * Menghitung nilai entropi dari password untuk mengukur kekuatannya.
-     */
+    //Menghitung nilai entropi dari password untuk mengukur kekuatannya.
     private function calculatePasswordEntropy(string $password): float
     {
         $length = strlen($password);
@@ -25,9 +23,8 @@ class AuthController extends Controller
         return $length * log($poolSize, 2);
     }
 
-    /**
-     * Alur Kerja Registrasi
-     */
+    
+    //Alur Kerja Registrasi
     public function register(Request $request)
     {
         $request->validate([
@@ -65,9 +62,7 @@ class AuthController extends Controller
         return redirect()->route('login.view')->with('success', 'Registrasi berhasil! Silakan login.');
     }
 
-    /**
-     * Alur Kerja Login
-     */
+    //Alur Kerja Login
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -96,9 +91,7 @@ class AuthController extends Controller
         return back()->withErrors(['username' => $loginError])->withInput();
     }
 
-    /**
-     * Logout
-     */
+    //Logout
     public function logout(Request $request)
     {
         Auth::logout();
@@ -107,10 +100,8 @@ class AuthController extends Controller
 
         return redirect()->route('login.view');
     }
-
-    /**
-     * Menampilkan Halaman Dashboard & Kalkulasi Benchmark
-     */
+    
+    //Menampilkan Halaman Dashboard & Kalkulasi Benchmark
     public function dashboard()
     {
         $user = Auth::user();

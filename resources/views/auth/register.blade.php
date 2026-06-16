@@ -63,13 +63,12 @@
             const input = document.getElementById(inputId);
             const text = document.getElementById(textId);
 
-            // Jika tipe saat ini adalah password (tersembunyi)
             if (input.type === 'password') {
-                input.type = 'text';          // Ubah menjadi teks (terlihat)
-                text.innerText = 'Tutup';     // Ubah label tombol
+                input.type = 'text';          
+                text.innerText = 'Tutup';     
             } else {
-                input.type = 'password';      // Kembalikan ke password
-                text.innerText = 'Lihat';     // Kembalikan label tombol
+                input.type = 'password';      
+                text.innerText = 'Lihat';     
             }
         }
     </script>
