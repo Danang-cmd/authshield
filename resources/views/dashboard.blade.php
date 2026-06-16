@@ -23,12 +23,8 @@
     <main class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
         <h2 class="text-2xl font-semibold mb-4 text-gray-800">Selamat Datang di Halaman Utama</h2>
         <p class="text-gray-600 leading-relaxed mb-4">
-            Anda berhasil masuk menggunakan sistem autentikasi keamanan tingkat tinggi **AuthShield**. Login Anda divalidasi dengan mencocokkan input password, salt unik dari database, dan kode rahasia server.
+            Anda berhasil masuk.
         </p>
-        
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded text-sm text-blue-700">
-            <strong>Info Sesi:</strong> ID User Anda di database adalah <code class="bg-blue-100 px-1 rounded">{{ Auth::id() }}</code>.
-        </div>
     </main>
 </body>
 </html>
