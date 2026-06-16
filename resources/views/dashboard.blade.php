@@ -26,7 +26,7 @@
         <div class="bg-white rounded-xl shadow-md p-6 mb-6">
             <h2 class="text-2xl font-semibold mb-2 text-gray-800">Selamat Datang di Halaman Utama</h2>
             <p class="text-gray-600 leading-relaxed mb-4">
-                Anda berhasil masuk menggunakan sistem autentikasi keamanan tingkat tinggi <strong>AuthShield</strong>. Login Anda divalidasi dengan mencocokkan input password, salt unik dari database, dan kode rahasia server.
+                Anda berhasil masuk. Login Anda divalidasi dengan mencocokkan input password, salt unik dari database, dan kode rahasia server.
             </p>
             
             <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded text-sm text-blue-700 inline-block">
